@@ -1,0 +1,14 @@
+{
+  "name": "superearn-bot",
+  "version": "1.0.0",
+  "description": "SuperEarn BD Telegram Bot with MongoDB",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.6.0",
+    "cors": "^2.8.5"
+  }
+}

@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperEarn BD - Premium Bot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f; --bg-secondary: #12121a; --bg-tertiary: #1a1a25;
+            --accent-gold: #d4a853; --accent-emerald: #10b981; --accent-rose: #f43f5e;
+            --text-primary: #f5f5f5; --text-secondary: #a1a1aa; --border-color: #2a2a35;
+        }
+        body { font-family: 'Space Grotesk', sans-serif; background: var(--bg-primary); color: var(--text-primary); margin: 0; min-height: 100vh; }
+        .glass-card { background: rgba(26, 26, 37, 0.85); backdrop-filter: blur(20px); border: 1px solid var(--border-color); border-radius: 16px; margin-bottom: 16px; padding: 20px; }
+        .input-field { width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px 16px; color: var(--text-primary); font-size: 15px; outline: none; margin-bottom: 12px; box-sizing: border-box; }
+        .btn-premium { background: linear-gradient(135deg, var(--accent-gold) 0%, #c49b40 100%); color: var(--bg-primary); font-weight: 600; padding: 14px 24px; border-radius: 12px; border: none; cursor: pointer; width: 100%; transition: 0.3s; }
+        .btn-premium:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(212, 168, 83, 0.3); }
+        .page { display: none; animation: fadeIn 0.4s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-pending { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .badge-approved { background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald); }
+        .badge-rejected { background: rgba(244, 63, 94, 0.2); color: var(--accent-rose); }
+        .sidebar { position: fixed; top: 0; right: -300px; width: 280px; height: 100%; background: var(--bg-secondary); border-left: 1px solid var(--border-color); z-index: 1000; transition: right 0.3s; overflow-y: auto; }
+        .sidebar.active { right: 0; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+        .overlay.active { display: block; }
+        .menu-item { padding: 14px 20px; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; align-items: center; gap: 12px; }
+        .menu-item:hover { background: rgba(212, 168, 83, 0.1); color: var(--accent-gold); }
+    </style>
+</head>
+<body>
+
+    <!-- Toast -->
+    <div id="toast" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg-secondary);padding:12px 24px;border-radius:10px;z-index:2000;display:none;"></div>
+
+    <!-- Sidebar -->
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div style="padding:20px;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="font-size:18px;">Menu</h3>
+            <button onclick="toggleSidebar()" style="background:none;border:none;color:white;cursor:pointer;font-size:20px;">&times;</button>
+        </div>
+        <nav id="menuNav"></nav>
+    </div>
+
+    <!-- Main Container -->
+    <div style="max-width:450px;margin:0 auto;padding:20px;">
+        
+        <!-- LOGIN PAGE -->
+        <div id="loginPage" class="page active">
+            <div style="text-align:center;padding-top:40px;margin-bottom:30px;">
+                <div style="width:70px;height:70px;background:linear-gradient(135deg,#d4a853,#c49b40);border-radius:20px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0a0a0f" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
+                <h1 style="font-size:28px;background:linear-gradient(to right,#d4a853,#f0c674);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">SuperEarn BD</h1>
+            </div>
+            <div class="glass-card">
+                <h2 style="margin-bottom:20px;font-size:22px;">Login</h2>
+                <form id="loginForm">
+                    <input type="text" id="loginEmail" class="input-field" placeholder="Email or Username" required>
+                    <input type="password" id="loginPass" class="input-field" placeholder="Password" required>
+                    <button type="submit" class="btn-premium">Login</button>
+                </form>
+                <p style="text-align:center;margin-top:16px;color:var(--text-secondary);font-size:14px;">
+                    No account? <span onclick="showPage('registerPage')" style="color:var(--accent-gold);cursor:pointer;">Register</span>
+                </p>
+                <div style="text-align:center;margin-top:10px;">
+                    <button onclick="showPage('adminLoginPage')" style="background:none;border:none;color:var(--text-secondary);font-size:12px;cursor:pointer;">Admin Panel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- REGISTER PAGE -->
+        <div id="registerPage" class="page">
+            <div style="text-align:center;padding-top:40px;margin-bottom:30px;">
+                <h1 style="font-size:26px;">Create Account</h1>
+                <p style="color:var(--accent-rose);font-size:12px;">One Account Per Device Only</p>
+            </div>
+            <div class="glass-card">
+                <form id="registerForm">
+                    <input type="text" id="regUser" class="input-field" placeholder="Username" required>
+                    <input type="email" id="regEmail" class="input-field" placeholder="Email Address" required>
+                    <input type="tel" id="regPhone" class="input-field" placeholder="Phone Number" required>
+                    <input type="password" id="regPass" class="input-field" placeholder="Password" required>
+                    <input type="password" id="regCPass" class="input-field" placeholder="Confirm Password" required>
+                    <input type="text" id="regRef" class="input-field" placeholder="Referral Code (Optional)">
+                    <button type="submit" class="btn-premium">Register Now</button>
+                </form>
+                <p style="text-align:center;margin-top:16px;color:var(--text-secondary);font-size:14px;">
+                    Have account? <span onclick="showPage('loginPage')" style="color:var(--accent-gold);cursor:pointer;">Login</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- ADMIN LOGIN PAGE -->
+        <div id="adminLoginPage" class="page">
+            <div class="glass-card" style="margin-top:60px;">
+                <h2 style="margin-bottom:20px;color:var(--accent-rose);">Admin Panel</h2>
+                <form id="adminLoginForm">
+                    <input type="text" id="adminUser" class="input-field" placeholder="Admin Username" required>
+                    <input type="password" id="adminPass" class="input-field" placeholder="Admin Password" required>
+                    <button type="submit" class="btn-premium" style="background:linear-gradient(135deg,#f43f5e,#dc2626);">Login</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- HOME PAGE -->
+        <div id="homePage" class="page">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <div>
+                    <p style="color:var(--text-secondary);font-size:12px;">Welcome,</p>
+                    <h2 style="font-size:20px;font-weight:bold;" id="homeUsername">User</h2>
+                </div>
+                <button onclick="toggleSidebar()" style="background:var(--bg-tertiary);border:1px solid var(--border-color);padding:10px;border-radius:10px;cursor:pointer;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+                </button>
+            </div>
+
+            <!-- Activation Banner -->
+            <div id="statusBanner" class="glass-card" style="padding:15px;margin-bottom:16px;"></div>
+
+            <!-- Balance -->
+            <div class="glass-card" style="background:linear-gradient(135deg,#1a1a25,#252530);border:none;">
+                <p style="color:var(--text-secondary);font-size:12px;">Total Balance</p>
+                <h1 style="font-size:32px;color:var(--accent-gold);margin:5px 0 15px;" id="totalBal">0.00 TK</h1>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+                    <div style="background:var(--bg-primary);padding:10px;border-radius:10px;text-align:center;">
+                        <p style="font-size:10px;color:var(--text-secondary);">Refer</p>
+                        <p style="color:var(--accent-emerald);font-weight:bold;" id="referBal">0.00</p>
+                    </div>
+                    <div style="background:var(--bg-primary);padding:10px;border-radius:10px;text-align:center;">
+                        <p style="font-size:10px;color:var(--text-secondary);">Gmail</p>
+                        <p style="color:#06b6d4;font-weight:bold;" id="gmailBal">0.00</p>
+                    </div>
+                    <div style="background:var(--bg-primary);padding:10px;border-radius:10px;text-align:center;">
+                        <p style="font-size:10px;color:var(--text-secondary);">Job</p>
+                        <p style="color:#fbbf24;font-weight:bold;" id="jobBal">0.00</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ref Link -->
+            <div style="margin-top:20px;">
+                <p style="font-size:14px;font-weight:600;margin-bottom:8px;">Referral Link</p>
+                <div style="background:var(--bg-tertiary);padding:12px;border-radius:10px;border:1px dashed var(--accent-gold);word-break:break-all;font-size:12px;color:var(--accent-gold);" id="refLinkShow">Loading...</div>
+                <button onclick="copyLink()" class="btn-premium" style="margin-top:10px;padding:10px;">Copy Link</button>
+            </div>
+        </div>
+
+        <!-- GIFT CODE PAGE -->
+        <div id="giftCodePage" class="page">
+             <header style="display:flex;gap:15px;margin-bottom:20px;align-items:center;">
+                <button onclick="showPage('homePage')" style="background:var(--bg-tertiary);border:none;padding:8px;border-radius:8px;cursor:pointer;color:white;">&larr;</button>
+                <h2>Gift Code</h2>
+            </header>
+            <div class="glass-card" style="text-align:center;">
+                <form id="giftCodeForm">
+                    <input type="text" id="giftCodeInput" class="input-field" placeholder="Enter Code" required>
+                    <button type="submit" class="btn-premium">Claim Code</button>
+                </form>
+            </div>
+            <!-- Gift History -->
+            <div style="margin-top:20px;">
+                <h3 style="font-size:16px;margin-bottom:10px;">Gift Code History</h3>
+                <div id="giftHistoryList"></div>
+            </div>
+        </div>
+
+        <!-- ADMIN PANEL -->
+        <div id="adminPanelPage" class="page">
+            <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
+                <h2 style="color:var(--accent-rose);">Admin Dashboard</h2>
+                <button onclick="showPage('loginPage')" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;">Logout</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+                <div class="glass-card" style="text-align:center;"><p style="font-size:12px;color:var(--text-secondary);">Users</p><p style="font-size:24px;color:var(--accent-gold);" id="adminUserCount">0</p></div>
+                <div class="glass-card" style="text-align:center;"><p style="font-size:12px;color:var(--text-secondary);">Active</p><p style="font-size:24px;color:var(--accent-emerald);" id="adminActiveCount">0</p></div>
+            </div>
+            
+            <h3 style="margin-bottom:10px;">User Control</h3>
+            <div id="adminUserList"></div>
+            
+            <!-- Admin Settings -->
+            <div class="glass-card" style="margin-top:20px;">
+                <h3>Create Gift Code</h3>
+                <div style="display:flex;gap:10px;margin-top:10px;">
+                    <input type="text" id="newGiftCode" class="input-field" placeholder="Code" style="margin-bottom:0;">
+                    <input type="number" id="newGiftAmt" class="input-field" placeholder="Amount" style="width:80px;margin-bottom:0;">
+                </div>
+                <button onclick="createGiftCode()" class="btn-premium" style="margin-top:10px;">Create</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const API_URL = window.location.origin;
+        let currentUser = null;
+        // Generate/Get Device ID (This restricts one account per browser/device)
+        let deviceId = localStorage.getItem('se_device_id');
+        if (!deviceId) {
+            deviceId = 'DEV-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
+            localStorage.setItem('se_device_id', deviceId);
+        }
+
+        // --- HELPERS ---
+        function $(id) { return document.getElementById(id); }
+        function showPage(id) { 
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
+            $(id).classList.add('active'); 
+        }
+        function toast(msg, type='success') {
+            const t = $('toast');
+            t.textContent = msg;
+            t.style.background = type === 'error' ? '#f43f5e' : '#10b981';
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+        function toggleSidebar() {
+            $('sidebar').classList.toggle('active');
+            $('overlay').classList.toggle('active');
+        }
+
+        // --- AUTH ---
+        
+        // Login
+        $('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = $('loginEmail').value;
+            const pass = $('loginPass').value;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password: pass })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    currentUser = data.user;
+                    localStorage.setItem('token', JSON.stringify(currentUser));
+                    toast('Login Successful!');
+                    updateHome();
+                    showPage('homePage');
+                    updateMenu();
+                } else {
+                    toast(data.error, 'error');
+                }
+            } catch (err) { toast('Connection error', 'error'); }
+        });
+
+        // Registration
+        $('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = $('regUser').value;
+            const email = $('regEmail').value;
+            const phone = $('regPhone').value;
+            const password = $('regPass').value;
+            const cpass = $('regCPass').value;
+            const referralCode = $('regRef').value;
+
+            if (password !== cpass) return toast('Passwords do not match', 'error');
+
+            try {
+                const res = await fetch(`${API_URL}/api/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, phone, password, referralCode, deviceId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    toast('Account Created!');
+                    currentUser = data.user;
+                    localStorage.setItem('token', JSON.stringify(currentUser));
+                    updateHome();
+                    showPage('homePage');
+                    updateMenu();
+                } else {
+                    toast(data.error, 'error');
+                }
+            } catch (err) { toast('Registration failed', 'error'); }
+        });
+
+        // Admin Login
+        $('adminLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const u = $('adminUser').value;
+            const p = $('adminPass').value;
+            // Hardcoded check for simplicity, ideally check DB
+            if (u === 'admin' && p === 'admin123') {
+                loadAdminData();
+                showPage('adminPanelPage');
+                toast('Welcome Admin');
+            } else {
+                toast('Wrong credentials', 'error');
+            }
+        });
+
+        // --- HOME LOGIC ---
+        
+        async function updateHome() {
+            if (!currentUser) return;
+            // Fetch fresh data from DB
+            try {
+                const res = await fetch(`${API_URL}/api/user/${currentUser._id}`);
+                currentUser = await res.json();
+                localStorage.setItem('token', JSON.stringify(currentUser));
+            } catch(e) {}
+
+            $('homeUsername').textContent = currentUser.username;
+            const total = currentUser.balances.refer + currentUser.balances.gmail + currentUser.balances.job;
+            $('totalBal').textContent = total.toFixed(2) + ' TK';
+            $('referBal').textContent = currentUser.balances.refer.toFixed(2);
+            $('gmailBal').textContent = currentUser.balances.gmail.toFixed(2);
+            $('jobBal').textContent = currentUser.balances.job.toFixed(2);
+            $('refLinkShow').textContent = `https://t.me/SuperEarnbd_bot?startapp=${currentUser.referralCode}`;
+
+            // Status Banner
+            if (currentUser.banned) {
+                $('statusBanner').innerHTML = `<div style="color:var(--accent-rose);">Your account has been BANNED.</div>`;
+            } else if (currentUser.active) {
+                $('statusBanner').innerHTML = `<div style="display:flex;align-items:center;gap:10px;color:var(--accent-emerald);"><span>Account Active</span></div>`;
+            } else {
+                $('statusBanner').innerHTML = `<div style="color:#fbbf24;">Account Not Active. Wait for Admin Approval.</div>`;
+            }
+
+            // Gift History
+            let giftHtml = '';
+            if (currentUser.giftHistory && currentUser.giftHistory.length > 0) {
+                currentUser.giftHistory.forEach(g => {
+                    giftHtml += `<div class="glass-card" style="padding:10px;margin-bottom:10px;display:flex;justify-content:space-between;">
+                        <span style="font-size:12px;">${g.code}</span>
+                        <span class="badge badge-approved">+${g.amount} TK</span>
+                    </div>`;
+                });
+            } else {
+                giftHtml = '<p style="text-align:center;color:#71717a;font-size:12px;">No history</p>';
+            }
+            $('giftHistoryList').innerHTML = giftHtml;
+        }
+
+        async function copyLink() {
+            navigator.clipboard.writeText($('refLinkShow').textContent);
+            toast('Link Copied!');
+        }
+
+        // --- GIFT CODE ---
+        $('giftCodeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const code = $('giftCodeInput').value;
+            try {
+                const res = await fetch(`${API_URL}/api/user/action`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: currentUser._id, type: 'gift', data: { code } })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    currentUser = data.user;
+                    toast('Code Claimed!');
+                    updateHome();
+                } else {
+                    toast(data.error, 'error');
+                }
+            } catch (err) { toast('Error', 'error'); }
+        });
+
+        // --- ADMIN ---
+        async function loadAdminData() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/users`);
+                const users = await res.json();
+                
+                $('adminUserCount').textContent = users.length;
+                $('adminActiveCount').textContent = users.filter(u => u.active).length;
+                
+                let html = '';
+                users.forEach(u => {
+                    html += `<div class="glass-card" style="margin-bottom:10px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                            <span style="font-weight:bold;">${u.username}</span>
+                            <span class="badge ${u.banned ? 'badge-rejected' : (u.active ? 'badge-approved' : 'badge-pending')}">${u.banned ? 'BANNED' : (u.active ? 'Active' : 'Pending')}</span>
+                        </div>
+                        <p style="font-size:10px;color:#71717a;margin-bottom:5px;">Phone: ${u.phone || 'N/A'} | Ref: ${u.referralCount}</p>
+                        <p style="font-size:10px;color:#71717a;margin-bottom:5px;">Bal: ${u.balances.refer + u.balances.gmail + u.balances.job} TK</p>
+                        <div style="display:flex;gap:5px;">
+                            <button onclick="toggleBan('${u._id}', ${u.banned})" class="btn-premium" style="padding:5px;font-size:10px;flex:1;background:${u.banned ? '#10b981' : '#f43f5e'};">${u.banned ? 'Unban' : 'Ban'}</button>
+                            <button onclick="toggleActive('${u._id}', ${u.active})" class="btn-premium" style="padding:5px;font-size:10px;flex:1;">${u.active ? 'Deactivate' : 'Activate'}</button>
+                        </div>
+                    </div>`;
+                });
+                $('adminUserList').innerHTML = html;
+            } catch (e) { console.log(e); }
+        }
+
+        async function toggleBan(id, status) {
+            const res = await fetch(`${API_URL}/api/admin/update-user`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: id, updates: { banned: !status } })
+            });
+            if(res.ok) { toast('User Updated'); loadAdminData(); }
+        }
+
+        async function toggleActive(id, status) {
+            const res = await fetch(`${API_URL}/api/admin/update-user`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: id, updates: { active: !status } })
+            });
+            if(res.ok) { toast('Status Updated'); loadAdminData(); }
+        }
+
+        async function createGiftCode() {
+            const code = $('newGiftCode').value;
+            const amount = $('newGiftAmt').value;
+            if(!code || !amount) return toast('Fill fields', 'error');
+            
+            const res = await fetch(`${API_URL}/api/admin/create-gift`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code, amount })
+            });
+            if(res.ok) { toast('Code Created'); $('newGiftCode').value = ''; $('newGiftAmt').value = ''; }
+        }
+
+        // --- MENU ---
+        function updateMenu() {
+            if (!currentUser) return;
+            $('menuNav').innerHTML = `
+                <div class="menu-item" onclick="showPage('homePage');toggleSidebar();">Home</div>
+                <div class="menu-item" onclick="showPage('giftCodePage');toggleSidebar();">Gift Code</div>
+                <div class="menu-item" onclick="showPage('homePage');toggleSidebar();">Referral History</div>
+                <div class="menu-item" onclick="showPage('homePage');toggleSidebar();">Withdraw History</div>
+                <div class="menu-item" style="color:var(--accent-rose);" onclick="logout();toggleSidebar();">Logout</div>
+            `;
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            currentUser = null;
+            showPage('loginPage');
+            $('menuNav').innerHTML = '';
+        }
+
+        // --- INIT ---
+        const savedUser = localStorage.getItem('token');
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            updateHome();
+            showPage('homePage');
+            updateMenu();
+        }
+    </script>
+</body>
+</html>
